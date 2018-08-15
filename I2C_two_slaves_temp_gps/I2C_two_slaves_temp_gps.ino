@@ -1,4 +1,4 @@
-// Not currently working
+// This code does not currently work - GPS seems to be the issue
 
 #include <Wire.h>
 #include <Adafruit_AM2315.h> // Library for external temperature/humidity sensing
