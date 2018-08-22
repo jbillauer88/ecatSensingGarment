@@ -34,7 +34,6 @@ void setup() {
 }
 
 void loop() {
-  
   if (! baro.begin()) {
     Serial.println("Couldnt find sensor");
     return;
