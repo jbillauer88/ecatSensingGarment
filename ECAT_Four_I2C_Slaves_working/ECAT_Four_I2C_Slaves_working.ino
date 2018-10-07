@@ -4,7 +4,7 @@
 #include <Adafruit_MPL3115A2.h>
 #include <Adafruit_AM2315.h>
 #include "Adafruit_SGP30.h"
-
+#include "Adafruit_VEML6070.h"
 
 // Initializing all sensor variables
 
@@ -13,6 +13,8 @@ Adafruit_MPL3115A2 baro = Adafruit_MPL3115A2();
 Adafruit_AM2315 am2315;
 
 Adafruit_SGP30 sgp;
+
+Adafruit_VEML6070 uv = Adafruit_VEML6070();
 
 uint32_t getAbsoluteHumidity(float temperature, float humidity) {
     // approximation formula from Sensirion SGP30 Driver Integration chapter 3.15
@@ -29,6 +31,10 @@ void setup() {
     Serial.println("OK!");
 
   // Starting all sensors
+
+  uv.begin(VEML6070_HALF_T);
+
+  
   if (! baro.begin()) {
     Serial.println("Couldnt find sensor");
     return;
@@ -38,6 +44,7 @@ void setup() {
      Serial.println("Sensor not found, check wiring & pullups!");
      while (1);
   }
+
 
   if (! sgp.begin()){
     Serial.println("Sensor not found :(");
@@ -54,6 +61,8 @@ void setup() {
 
 int counter = 0;
 void loop() {
+
+  Serial.println("===================");
     Serial.println("OK! Loop");
 
   // Code for MPL3115A2 Sensor ////////////////////////////////////////////////
@@ -92,14 +101,21 @@ void loop() {
 
   //delay(500);
 
+  Serial.println("===================");
+
   if (! sgp.IAQmeasure()) {
     Serial.println("Measurement failed");
     return;
   }
   Serial.print("TVOC "); Serial.print(sgp.TVOC); Serial.print(" ppb\t");
   Serial.print("eCO2 "); Serial.print(sgp.eCO2); Serial.println(" ppm");
+
+  // Code for VEML6070 Sensor ////////////////////////////////////////////////
+
+  Serial.println("===================");
   
+  Serial.print("UV light level: "); Serial.println(uv.readUV());
   
-  delay(50);
+  delay(100);
 
 }

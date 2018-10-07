@@ -1,10 +1,18 @@
 // Including all sensor libraries along with libraries for I2C
 
 #include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
 #include <Adafruit_MPL3115A2.h>
 #include <Adafruit_AM2315.h>
 #include "Adafruit_SGP30.h"
+#include "Adafruit_VEML6070.h"
 
+// Initializing SD variables
+
+File myFile;
+
+const int chipSelect = 4;
 
 // Initializing all sensor variables
 
@@ -13,6 +21,8 @@ Adafruit_MPL3115A2 baro = Adafruit_MPL3115A2();
 Adafruit_AM2315 am2315;
 
 Adafruit_SGP30 sgp;
+
+Adafruit_VEML6070 uv = Adafruit_VEML6070();
 
 uint32_t getAbsoluteHumidity(float temperature, float humidity) {
     // approximation formula from Sensirion SGP30 Driver Integration chapter 3.15
@@ -25,10 +35,21 @@ uint32_t getAbsoluteHumidity(float temperature, float humidity) {
 void setup() {
   
   // Starting Serial
-  Serial.begin(9600);
-    Serial.println("OK!");
+  //Serial.begin(9600);
+  //Serial.println("OK!");
 
   // Starting all sensors
+
+  uv.begin(VEML6070_HALF_T);
+  baro.begin();
+  am2315.begin();
+  sgp.begin();
+  
+  // Starting SD card
+
+  SD.begin(chipSelect);
+  
+  /*
   if (! baro.begin()) {
     Serial.println("Couldnt find sensor");
     return;
@@ -39,6 +60,7 @@ void setup() {
      while (1);
   }
 
+
   if (! sgp.begin()){
     Serial.println("Sensor not found :(");
     while (1);
@@ -47,59 +69,81 @@ void setup() {
   Serial.print(sgp.serialnumber[0], HEX);
   Serial.print(sgp.serialnumber[1], HEX);
   Serial.println(sgp.serialnumber[2], HEX);
-
+  */
 
 
 }
 
 int counter = 0;
 void loop() {
-    Serial.println("OK! Loop");
+
+  myFile = SD.open("sensed.txt", FILE_WRITE);
+
+  if (myFile) {
 
   // Code for MPL3115A2 Sensor ////////////////////////////////////////////////
 
-  Serial.println("===================");
+  //Serial.println("===================");
   
   float pascals = baro.getPressure();
   // Our weather page presents pressure in Inches (Hg)
   // Use http://www.onlineconversion.com/pressure.htm for other units
-  Serial.print(pascals/3377); 
-  //Serial.println(" Inches (Hg)");
-
+  myFile.print(pascals/3377); 
+  myFile.print(" Inches (Hg)");
+  myFile.print(",");  
 
   float altm = baro.getAltitude();
-  Serial.print(altm); 
-  Serial.println(" meters");
+  myFile.print(altm); 
+  myFile.print(" meters");
+  myFile.print(",");  
  
 
   float tempC = baro.getTemperature();
-  Serial.print(tempC); 
-  Serial.println("*C");
+  myFile.print(tempC); 
+  myFile.print("*C");
+  myFile.print(",");  
   
 
   //delay(500);
 
   // Code for AM2315 Sensor ///////////////////////////////////////////////////
 
-  Serial.println("===================");
+  //Serial.println("===================");
   
-  Serial.print("Hum: "); 
-  Serial.println(am2315.readHumidity());
+  myFile.print("Hum: "); 
+  myFile.print(am2315.readHumidity());
+  myFile.print(",");  
  
-  Serial.print("Temp: "); 
-  Serial.println(am2315.readTemperature());
+  myFile.print("Temp: "); 
+  myFile.print(am2315.readTemperature());
+  myFile.print(",");  
   
 
   //delay(500);
 
+  //Serial.println("===================");
+
   if (! sgp.IAQmeasure()) {
-    Serial.println("Measurement failed");
+    //Serial.println("Measurement failed");
     return;
   }
-  Serial.print("TVOC "); Serial.print(sgp.TVOC); Serial.print(" ppb\t");
-  Serial.print("eCO2 "); Serial.print(sgp.eCO2); Serial.println(" ppm");
+  
+  myFile.print("TVOC "); myFile.print(sgp.TVOC); myFile.print(" ppb\t");
+  myFile.print(",");  
+  myFile.print("eCO2 "); myFile.print(sgp.eCO2); myFile.print(" ppm");
+  myFile.print(",");  
+
+  // Code for VEML6070 Sensor ////////////////////////////////////////////////
+
+  //Serial.println("===================");
+  
+  myFile.print("UV light level: "); myFile.println(uv.readUV());
+  myFile.close();
   
   
-  delay(50);
+
+  }
+
+  delay(100);
 
 }
