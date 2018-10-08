@@ -77,7 +77,7 @@ void setup() {
 int counter = 0;
 void loop() {
 
-  myFile = SD.open("sensed.txt", FILE_WRITE);
+  myFile = SD.open("sensed.txt", FILE_WRITE | 0_APPEND); // Added Append to just add to previous data
 
   if (myFile) {
 
