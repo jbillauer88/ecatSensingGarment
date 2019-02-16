@@ -57,7 +57,7 @@ char c;
 
 uint32_t timer = millis();
 
-int interval = 100;
+int interval = 1000;
 
 
 void setup() {
@@ -90,7 +90,7 @@ void loop() {
 
   // Creating or Opening CSV txt file
   
-  myFile = SD.open("sensoria.txt", FILE_WRITE); 
+  myFile = SD.open("eco.txt", FILE_WRITE); 
 
   // Read GPS data
 
@@ -114,8 +114,10 @@ void loop() {
       
     }
 
-    if (timer > millis()) timer = millis();
-     
+    if (timer > millis()) {
+      timer = millis();
+    }
+    
     // Using interval instead of delay to set resolution of samples
     
     if (millis() - timer > interval) {

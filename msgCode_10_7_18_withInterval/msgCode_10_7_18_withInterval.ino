@@ -44,7 +44,7 @@ uint32_t getAbsoluteHumidity(float temperature, float humidity) {
 
 uint32_t timer = millis();
 
-int interval = 100;
+int interval = 1000;
 
 
 void setup() {
